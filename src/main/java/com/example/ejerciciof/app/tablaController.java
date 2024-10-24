@@ -12,10 +12,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.example.ejerciciof.model.Persona;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class tablaController {
@@ -64,14 +69,12 @@ public class tablaController {
         columnaApellidos.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getApellidos()));
         columnaEdad.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getEdad()));
 
-        // Llenar la tabla con la lista de personas (no filtrada)
         personas = FXCollections.observableArrayList();
         filtro = new FilteredList<>(personas);
-        tablaVista.setItems(filtro); // Setea la tabla con la lista filtrada
+        tablaVista.setItems(filtro);
 
-        // Listener para búsqueda
         txtBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
-            filtrar(null); // Llama a filtrar cuando el texto cambia
+            filtrar(null);
         });
     }
 
@@ -79,11 +82,11 @@ public class tablaController {
     void agregarPersona(ActionEvent event) {
         mostrarVentanaDatos((Stage) btAgregar.getScene().getWindow(), false);
         btnGuardar.setOnAction(actionEvent -> {
-            guardar(false); // Guardar la nueva persona
-            filtro.setPredicate(null); // Limpiar el filtro después de agregar
-            tablaVista.getSelectionModel().clearSelection(); // Limpiar selección
+            guardar(false);
+            filtro.setPredicate(null);
+            tablaVista.getSelectionModel().clearSelection();
         });
-        btnCancelar.setOnAction(actionEvent -> cancelar()); // Cancelar operación
+        btnCancelar.setOnAction(actionEvent -> cancelar());
     }
 
     public void mostrarVentanaDatos(Stage ventanaPrincipal, boolean esModif) {
@@ -103,7 +106,6 @@ public class tablaController {
         gridPane.setHgap(10);
         gridPane.setVgap(10);
 
-        // Campos para nombre, apellidos y edad
         Label lblNombre = new Label("Nombre");
         txtNombre = new TextField(esModif ? tablaVista.getSelectionModel().getSelectedItem().getNombre() : "");
         gridPane.add(lblNombre, 0, 0);
@@ -139,18 +141,15 @@ public class tablaController {
             String apellidos = txtApellidos.getText();
             int edad = Integer.parseInt(txtEdad.getText());
 
-            // Crear una nueva persona con los datos ingresados
             Persona nuevaPersona = new Persona(nombre, apellidos, edad);
 
-            // Validar si la persona ya existe
             boolean existe = false;
             for (Persona persona : personas) {
                 if (persona.equals(nuevaPersona)) {
-                    // Si estamos modificando, ignoramos la persona actualmente seleccionada
                     if (esModificar && persona.equals(tablaVista.getSelectionModel().getSelectedItem())) {
                         continue;
                     }
-                    existe = true; // La persona ya existe
+                    existe = true;
                     break;
                 }
             }
@@ -159,27 +158,26 @@ public class tablaController {
                 ArrayList<String> errores = new ArrayList<>();
                 errores.add("La persona ya existe.");
                 mostrarAlertError(errores);
-                return; // Salir sin guardar
+                return;
             }
 
             if (esModificar) {
                 Persona personaSeleccionada = tablaVista.getSelectionModel().getSelectedItem();
                 int index = personas.indexOf(personaSeleccionada);
                 if (index >= 0) {
-                    personas.set(index, nuevaPersona); // Modificar en la lista original
+                    personas.set(index, nuevaPersona);
                     mostrarVentanaModificado();
                 }
             } else {
-                personas.add(nuevaPersona); // Agregar a la lista original
+                personas.add(nuevaPersona);
                 mostrarVentanaAgregado();
             }
 
             modal.close();
-            txtBuscar.setText(""); // Limpiar el campo de búsqueda
-            filtro.setPredicate(null); // Mostrar todas las personas
+            txtBuscar.setText("");
+            filtro.setPredicate(null);
         }
     }
-
 
     private boolean valido() {
         boolean error = false;
@@ -213,11 +211,11 @@ public class tablaController {
             lst.add("No has seleccionado ninguna persona.");
             mostrarAlertError(lst);
         } else {
-            personas.remove(p); // Remover de la lista original
-            filtro.setPredicate(null); // Mostrar todas las personas
+            personas.remove(p);
+            filtro.setPredicate(null);
             mostrarVentanaEliminado();
             tablaVista.getSelectionModel().clearSelection();
-            txtBuscar.setText(""); // Limpiar el campo de búsqueda
+            txtBuscar.setText("");
         }
     }
 
@@ -231,7 +229,7 @@ public class tablaController {
         } else {
             mostrarVentanaDatos((Stage) btModificar.getScene().getWindow(), true);
             btnGuardar.setOnAction(actionEvent -> {
-                guardar(true); // Guardar los cambios
+                guardar(true);
                 tablaVista.getSelectionModel().clearSelection();
             });
             btnCancelar.setOnAction(actionEvent -> cancelar());
@@ -241,13 +239,13 @@ public class tablaController {
     @FXML
     void filtrar(ActionEvent event) {
         if (txtBuscar.getText().isEmpty()) {
-            tablaVista.setItems(personas); // Mostrar todas las personas si el campo está vacío
+            tablaVista.setItems(personas);
         } else {
             String textoBusqueda = txtBuscar.getText().toLowerCase();
             filtro.setPredicate(persona ->
                     persona.getNombre().toLowerCase().startsWith(textoBusqueda)
             );
-            tablaVista.setItems(filtro); // Mostrar las personas que cumplen con el filtro
+            tablaVista.setItems(filtro);
         }
     }
 
@@ -293,6 +291,28 @@ public class tablaController {
     }
 
     public void exportar(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+        File file = fileChooser.showSaveDialog(btExportar.getScene().getWindow());
+
+        if (file != null) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+                bw.write("Nombre,Apellidos,Edad\n");
+                for (Persona persona : personas) {
+                    bw.write(String.format("%s,%s,%d\n", persona.getNombre(), persona.getApellidos(), persona.getEdad()));
+                }
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setHeaderText(null);
+                alert.setTitle("Exportado correctamente");
+                alert.setContentText("Datos exportados correctamente.");
+                alert.showAndWait();
+            } catch (IOException e) {
+                ArrayList<String> errores = new ArrayList<>();
+                errores.add("No se ha podido exportar.");
+                mostrarAlertError(errores);
+            }
+        }
     }
 
     public void importar(ActionEvent actionEvent) {
