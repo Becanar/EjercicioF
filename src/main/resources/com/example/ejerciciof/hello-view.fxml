@@ -2,13 +2,39 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.ejercicioe.app.tablaController">
+<VBox fx:id="rootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ejerciciof.app.tablaController">
    <children>
+      <HBox fx:id="contenedorBuscadorBotones" prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label fx:id="lblBuscador" text="Filtrar por nombre:">
+               <HBox.margin>
+                  <Insets left="10.0" top="15.0" />
+               </HBox.margin>
+            </Label>
+            <TextField fx:id="txtBuscar" onAction="#filtrar">
+               <HBox.margin>
+                  <Insets left="5.0" top="10.0" />
+               </HBox.margin>
+            </TextField>
+            <Button fx:id="btExportar" mnemonicParsing="false" onAction="#exportar" text="Exportar">
+               <HBox.margin>
+                  <Insets left="150.0" top="10.0" />
+               </HBox.margin>
+            </Button>
+            <Button fx:id="btImportar" mnemonicParsing="false" onAction="#importar" text="Importar">
+               <HBox.margin>
+                  <Insets left="30.0" top="10.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
       <TableView fx:id="tablaVista" prefHeight="344.0" prefWidth="439.0">
          <columns>
             <TableColumn fx:id="columnaNombre" prefWidth="336.00000607967377" text="NOMBRE" />
@@ -22,21 +48,21 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
       </TableView>
-      <HBox fx:id="contenedorBotones" prefHeight="100.0" prefWidth="200.0">
+      <HBox fx:id="contenedorBotones" prefHeight="110.0" prefWidth="600.0">
          <children>
             <Button fx:id="btAgregar" mnemonicParsing="false" onAction="#agregarPersona" text="Agregar Persona">
                <HBox.margin>
-                  <Insets left="50.0" top="20.0" />
+                  <Insets left="100.0" top="10.0" />
                </HBox.margin>
             </Button>
             <Button fx:id="btModificar" mnemonicParsing="false" onAction="#modificar" text="Modificar Persona">
                <HBox.margin>
-                  <Insets left="30.0" top="20.0" />
+                  <Insets left="30.0" top="10.0" />
                </HBox.margin>
             </Button>
             <Button fx:id="btEliminar" mnemonicParsing="false" onAction="#eliminar" text="Eliminar Persona">
                <HBox.margin>
-                  <Insets left="30.0" top="20.0" />
+                  <Insets left="30.0" top="10.0" />
                </HBox.margin>
             </Button>
          </children>

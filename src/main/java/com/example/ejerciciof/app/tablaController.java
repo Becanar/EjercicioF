@@ -9,9 +9,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
+        import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.stage.Modality;
+        import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.example.ejerciciof.model.Persona;
 
@@ -26,6 +26,22 @@ public class tablaController {
 
     @FXML
     private Button btModificar;
+
+    @FXML
+    private Button btExportar;
+
+    @FXML
+    private Button btImportar;
+
+    @FXML
+    private HBox contenedorBuscadorBotones;
+
+    @FXML
+    private Label lblBuscador;
+
+    @FXML
+    private TextField txtBuscar;
+
     @FXML
     private TableColumn<Persona,String> columnaApellidos;
 
@@ -308,5 +324,18 @@ public class tablaController {
             btnCancelar.setOnAction(actionEvent -> cancelar());
         }
     }
+    @FXML
+    void exportar(ActionEvent event) {
 
+    }
+
+    @FXML
+    void importar(ActionEvent event) {
+
+    }
+
+    public void filtrar(ActionEvent actionEvent) {
+
+    }
 }
+
