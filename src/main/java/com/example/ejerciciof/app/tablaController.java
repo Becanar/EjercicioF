@@ -63,9 +63,13 @@ public class tablaController {
         columnaNombre.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNombre()));
         columnaApellidos.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getApellidos()));
         columnaEdad.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getEdad()));
-        personas = tablaVista.getItems();
-        filtro = new FilteredList<>(personas);
 
+        // Llenar la tabla con la lista de personas (no filtrada)
+        personas = FXCollections.observableArrayList();
+        filtro = new FilteredList<>(personas);
+        tablaVista.setItems(filtro); // Setea la tabla con la lista filtrada
+
+        // Listener para búsqueda
         txtBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
             filtrar(null); // Llama a filtrar cuando el texto cambia
         });
@@ -75,33 +79,11 @@ public class tablaController {
     void agregarPersona(ActionEvent event) {
         mostrarVentanaDatos((Stage) btAgregar.getScene().getWindow(), false);
         btnGuardar.setOnAction(actionEvent -> {
-            guardar(false);
-            // Limpiar el campo de búsqueda y mostrar todas las personas
-            txtBuscar.setText("");
-            filtro.setPredicate(null);
-            tablaVista.setItems(personas);
-            tablaVista.getSelectionModel().clearSelection();
+            guardar(false); // Guardar la nueva persona
+            filtro.setPredicate(null); // Limpiar el filtro después de agregar
+            tablaVista.getSelectionModel().clearSelection(); // Limpiar selección
         });
-        btnCancelar.setOnAction(actionEvent -> cancelar());
-    }
-
-    private void mostrarAlertError(ArrayList<String> lst) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.initOwner(btAgregar.getScene().getWindow());
-        alert.setHeaderText(null);
-        alert.setTitle("Error");
-        String error = String.join("\n", lst);
-        alert.setContentText(error);
-        alert.showAndWait();
-    }
-
-    private void mostrarVentanaAgregado() {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.initOwner(btAgregar.getScene().getWindow());
-        alerta.setHeaderText(null);
-        alerta.setTitle("Info");
-        alerta.setContentText("Persona agregada correctamente.");
-        alerta.showAndWait();
+        btnCancelar.setOnAction(actionEvent -> cancelar()); // Cancelar operación
     }
 
     public void mostrarVentanaDatos(Stage ventanaPrincipal, boolean esModif) {
@@ -115,10 +97,13 @@ public class tablaController {
         }
         modal.initOwner(ventanaPrincipal);
         modal.initModality(Modality.WINDOW_MODAL);
+
         GridPane gridPane = new GridPane();
         gridPane.setPadding(new Insets(10));
         gridPane.setHgap(10);
         gridPane.setVgap(10);
+
+        // Campos para nombre, apellidos y edad
         Label lblNombre = new Label("Nombre");
         txtNombre = new TextField(esModif ? tablaVista.getSelectionModel().getSelectedItem().getNombre() : "");
         gridPane.add(lblNombre, 0, 0);
@@ -149,49 +134,52 @@ public class tablaController {
     }
 
     public void guardar(boolean esModificar) {
-        boolean resultado = valido();
-        if (resultado) {
-            Persona p = new Persona(txtNombre.getText(), txtApellidos.getText(), Integer.parseInt(txtEdad.getText()));
-            ObservableList<Persona> personas = tablaVista.getItems();
+        if (valido()) {
+            String nombre = txtNombre.getText();
+            String apellidos = txtApellidos.getText();
+            int edad = Integer.parseInt(txtEdad.getText());
 
-            if (!personas.contains(p)) {
-                if (esModificar) {
-                    Persona personaOriginal = tablaVista.getSelectionModel().getSelectedItem();
-                    int index = personas.indexOf(personaOriginal);
-                    if (index >= 0) {
-                        personas.set(index, p);
-                        mostrarVentanaModificado();
+            // Crear una nueva persona con los datos ingresados
+            Persona nuevaPersona = new Persona(nombre, apellidos, edad);
+
+            // Validar si la persona ya existe
+            boolean existe = false;
+            for (Persona persona : personas) {
+                if (persona.equals(nuevaPersona)) {
+                    // Si estamos modificando, ignoramos la persona actualmente seleccionada
+                    if (esModificar && persona.equals(tablaVista.getSelectionModel().getSelectedItem())) {
+                        continue;
                     }
-                } else {
-                    personas.add(p);
-                    mostrarVentanaAgregado();
+                    existe = true; // La persona ya existe
+                    break;
                 }
-
-                modal.close();
-                tablaVista.getSelectionModel().clearSelection();
-                txtBuscar.setText("");
-                filtro.setPredicate(null);
-                tablaVista.setItems(personas);
-            } else {
-                ArrayList<String> lst = new ArrayList<>();
-                lst.add("La persona ya existe.");
-                mostrarAlertError(lst);
             }
+
+            if (existe) {
+                ArrayList<String> errores = new ArrayList<>();
+                errores.add("La persona ya existe.");
+                mostrarAlertError(errores);
+                return; // Salir sin guardar
+            }
+
+            if (esModificar) {
+                Persona personaSeleccionada = tablaVista.getSelectionModel().getSelectedItem();
+                int index = personas.indexOf(personaSeleccionada);
+                if (index >= 0) {
+                    personas.set(index, nuevaPersona); // Modificar en la lista original
+                    mostrarVentanaModificado();
+                }
+            } else {
+                personas.add(nuevaPersona); // Agregar a la lista original
+                mostrarVentanaAgregado();
+            }
+
+            modal.close();
+            txtBuscar.setText(""); // Limpiar el campo de búsqueda
+            filtro.setPredicate(null); // Mostrar todas las personas
         }
     }
 
-    private void mostrarVentanaModificado() {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.initOwner(btAgregar.getScene().getWindow());
-        alerta.setHeaderText(null);
-        alerta.setTitle("Info");
-        alerta.setContentText("Persona modificada correctamente.");
-        alerta.showAndWait();
-    }
-
-    public void cancelar() {
-        modal.close();
-    }
 
     private boolean valido() {
         boolean error = false;
@@ -225,21 +213,12 @@ public class tablaController {
             lst.add("No has seleccionado ninguna persona.");
             mostrarAlertError(lst);
         } else {
-            personas.remove(p);
-            filtro.setPredicate(null);
+            personas.remove(p); // Remover de la lista original
+            filtro.setPredicate(null); // Mostrar todas las personas
             mostrarVentanaEliminado();
             tablaVista.getSelectionModel().clearSelection();
-            txtBuscar.setText("");
+            txtBuscar.setText(""); // Limpiar el campo de búsqueda
         }
-    }
-
-    private void mostrarVentanaEliminado() {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.initOwner(btAgregar.getScene().getWindow());
-        alerta.setHeaderText(null);
-        alerta.setTitle("Info");
-        alerta.setContentText("Persona eliminada correctamente.");
-        alerta.showAndWait();
     }
 
     @FXML
@@ -252,21 +231,11 @@ public class tablaController {
         } else {
             mostrarVentanaDatos((Stage) btModificar.getScene().getWindow(), true);
             btnGuardar.setOnAction(actionEvent -> {
-                guardar(true);
+                guardar(true); // Guardar los cambios
                 tablaVista.getSelectionModel().clearSelection();
             });
             btnCancelar.setOnAction(actionEvent -> cancelar());
         }
-    }
-
-    @FXML
-    void exportar(ActionEvent event) {
-        // Implementar exportación
-    }
-
-    @FXML
-    void importar(ActionEvent event) {
-        // Implementar importación
     }
 
     @FXML
@@ -280,5 +249,52 @@ public class tablaController {
             );
             tablaVista.setItems(filtro); // Mostrar las personas que cumplen con el filtro
         }
+    }
+
+    private void mostrarAlertError(ArrayList<String> lst) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initOwner(btAgregar.getScene().getWindow());
+        alert.setHeaderText(null);
+        alert.setTitle("Error");
+        String error = String.join("\n", lst);
+        alert.setContentText(error);
+        alert.showAndWait();
+    }
+
+    private void mostrarVentanaAgregado() {
+        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+        alerta.initOwner(btAgregar.getScene().getWindow());
+        alerta.setHeaderText(null);
+        alerta.setTitle("Info");
+        alerta.setContentText("Persona agregada correctamente.");
+        alerta.showAndWait();
+    }
+
+    private void mostrarVentanaModificado() {
+        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+        alerta.initOwner(btAgregar.getScene().getWindow());
+        alerta.setHeaderText(null);
+        alerta.setTitle("Info");
+        alerta.setContentText("Persona modificada correctamente.");
+        alerta.showAndWait();
+    }
+
+    private void mostrarVentanaEliminado() {
+        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+        alerta.initOwner(btAgregar.getScene().getWindow());
+        alerta.setHeaderText(null);
+        alerta.setTitle("Info");
+        alerta.setContentText("Persona eliminada correctamente.");
+        alerta.showAndWait();
+    }
+
+    public void cancelar() {
+        modal.close();
+    }
+
+    public void exportar(ActionEvent actionEvent) {
+    }
+
+    public void importar(ActionEvent actionEvent) {
     }
 }
