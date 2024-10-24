@@ -17,10 +17,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.example.ejerciciof.model.Persona;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class tablaController {
@@ -316,5 +313,58 @@ public class tablaController {
     }
 
     public void importar(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+        File file = fileChooser.showOpenDialog(btImportar.getScene().getWindow());
+
+        if (file != null) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                br.readLine(); // Ignorar la primera línea (cabecera)
+                ArrayList<String> errores = new ArrayList<>();
+
+                while ((line = br.readLine()) != null) {
+                    String[] partes = line.split(",");
+                    if (partes.length != 3) {
+                        errores.add("Error en la línea: " + line + ". Debe contener 3 campos.");
+                        continue;
+                    }
+
+                    String nombre = partes[0].trim();
+                    String apellidos = partes[1].trim();
+                    int edad;
+
+                    try {
+                        edad = Integer.parseInt(partes[2].trim());
+                    } catch (NumberFormatException e) {
+                        errores.add("Error en la línea: " + line + ". La edad debe ser numérica.");
+                        continue;
+                    }
+
+                    Persona nuevaPersona = new Persona(nombre, apellidos, edad);
+                    boolean existe = personas.contains(nuevaPersona);
+
+                    if (!existe) {
+                        personas.add(nuevaPersona);
+                    }
+                }
+
+                if (!errores.isEmpty()) {
+                    mostrarAlertError(errores);
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setHeaderText(null);
+                    alert.setTitle("Éxito");
+                    alert.setContentText("Datos importados correctamente.");
+                    alert.showAndWait();
+                }
+
+            } catch (IOException e) {
+                ArrayList<String> errores = new ArrayList<>();
+                errores.add("No se pudo importar el archivo.");
+                mostrarAlertError(errores);
+            }
+        }
     }
 }
