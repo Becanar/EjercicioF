@@ -20,6 +20,10 @@ import com.example.ejerciciof.model.Persona;
 import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * Controlador para la gestión de una tabla que contiene información de personas. Permite agregar, modificar, eliminar,
+ * importar y exportar datos de personas en formato CSV.
+ */
 public class tablaController {
 
     @FXML
@@ -39,11 +43,11 @@ public class tablaController {
     @FXML
     private TextField txtBuscar;
     @FXML
-    private TableColumn<Persona,String> columnaApellidos;
+    private TableColumn<Persona, String> columnaApellidos;
     @FXML
-    private TableColumn<Persona,Integer> columnaEdad;
+    private TableColumn<Persona, Integer> columnaEdad;
     @FXML
-    private TableColumn<Persona,String> columnaNombre;
+    private TableColumn<Persona, String> columnaNombre;
     @FXML
     private VBox rootPane;
     @FXML
@@ -61,6 +65,10 @@ public class tablaController {
     private Button btnCancelar;
     private Stage modal;
 
+    /**
+     * Inicializa la tabla, configurando los valores para las columnas y activando el filtrado de datos
+     * a partir del campo de búsqueda.
+     */
     public void initialize() {
         columnaNombre.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNombre()));
         columnaApellidos.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getApellidos()));
@@ -75,6 +83,10 @@ public class tablaController {
         });
     }
 
+    /**
+     * Método que muestra una ventana emergente para agregar una nueva persona a la tabla.
+     * @param event Evento de acción.
+     */
     @FXML
     void agregarPersona(ActionEvent event) {
         mostrarVentanaDatos((Stage) btAgregar.getScene().getWindow(), false);
@@ -86,6 +98,11 @@ public class tablaController {
         btnCancelar.setOnAction(actionEvent -> cancelar());
     }
 
+    /**
+     * Muestra una ventana modal para agregar o modificar datos de una persona.
+     * @param ventanaPrincipal La ventana principal desde donde se abre el modal.
+     * @param esModif Booleano que indica si se trata de una modificación (true) o un nuevo registro (false).
+     */
     public void mostrarVentanaDatos(Stage ventanaPrincipal, boolean esModif) {
         modal = new Stage();
         modal.setResizable(false);
@@ -132,6 +149,10 @@ public class tablaController {
         modal.show();
     }
 
+    /**
+     * Guarda una nueva persona o modifica la existente según el modo de operación.
+     * @param esModificar Indica si se está modificando una persona existente (true) o agregando una nueva (false).
+     */
     public void guardar(boolean esModificar) {
         if (valido()) {
             String nombre = txtNombre.getText();
@@ -176,6 +197,10 @@ public class tablaController {
         }
     }
 
+    /**
+     * Valida los campos del formulario de persona para verificar que los datos son correctos.
+     * @return true si todos los datos son válidos; de lo contrario, false.
+     */
     private boolean valido() {
         boolean error = false;
         ArrayList<String> errores = new ArrayList<>();
@@ -200,6 +225,10 @@ public class tablaController {
         return true;
     }
 
+    /**
+     * Elimina la persona seleccionada en la tabla.
+     * @param event Evento de acción.
+     */
     @FXML
     void eliminar(ActionEvent event) {
         Persona p = tablaVista.getSelectionModel().getSelectedItem();
@@ -216,6 +245,10 @@ public class tablaController {
         }
     }
 
+    /**
+     * Modifica los datos de la persona seleccionada en la tabla.
+     * @param event Evento de acción.
+     */
     @FXML
     void modificar(ActionEvent event) {
         Persona p = tablaVista.getSelectionModel().getSelectedItem();
@@ -233,6 +266,10 @@ public class tablaController {
         }
     }
 
+    /**
+     * Filtra las personas de la tabla basándose en el texto ingresado en el campo de búsqueda.
+     * @param event Evento de acción.
+     */
     @FXML
     void filtrar(ActionEvent event) {
         if (txtBuscar.getText().isEmpty()) {
@@ -246,6 +283,10 @@ public class tablaController {
         }
     }
 
+    /**
+     * Muestra una alerta con los mensajes de error especificados.
+     * @param lst Lista de mensajes de error.
+     */
     private void mostrarAlertError(ArrayList<String> lst) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.initOwner(btAgregar.getScene().getWindow());
@@ -256,6 +297,9 @@ public class tablaController {
         alert.showAndWait();
     }
 
+    /**
+     * Muestra una alerta indicando que una persona ha sido agregada correctamente.
+     */
     private void mostrarVentanaAgregado() {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.initOwner(btAgregar.getScene().getWindow());
@@ -265,6 +309,9 @@ public class tablaController {
         alerta.showAndWait();
     }
 
+    /**
+     * Muestra una alerta indicando que una persona ha sido modificada correctamente.
+     */
     private void mostrarVentanaModificado() {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.initOwner(btAgregar.getScene().getWindow());
@@ -274,6 +321,9 @@ public class tablaController {
         alerta.showAndWait();
     }
 
+    /**
+     * Muestra una alerta indicando que una persona ha sido eliminada correctamente.
+     */
     private void mostrarVentanaEliminado() {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.initOwner(btAgregar.getScene().getWindow());
@@ -283,10 +333,17 @@ public class tablaController {
         alerta.showAndWait();
     }
 
+    /**
+     * Cierra la ventana modal actual.
+     */
     public void cancelar() {
         modal.close();
     }
 
+    /**
+     * Exporta los datos de las personas a un archivo CSV.
+     * @param actionEvent Evento de acción.
+     */
     public void exportar(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
@@ -312,6 +369,10 @@ public class tablaController {
         }
     }
 
+    /**
+     * Importa los datos de las personas desde un archivo CSV.
+     * @param actionEvent Evento de acción.
+     */
     public void importar(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
@@ -321,13 +382,13 @@ public class tablaController {
         if (file != null) {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
-                br.readLine(); // Ignorar la primera línea (cabecera)
+                br.readLine();
                 ArrayList<String> errores = new ArrayList<>();
 
                 while ((line = br.readLine()) != null) {
                     String[] partes = line.split(",");
                     if (partes.length != 3) {
-                        errores.add("Error en la línea: " + line + ". Debe contener 3 campos.");
+                        errores.add("Error en la línea: " + line + ". No tiene  3 campos.");
                         continue;
                     }
 
@@ -338,7 +399,7 @@ public class tablaController {
                     try {
                         edad = Integer.parseInt(partes[2].trim());
                     } catch (NumberFormatException e) {
-                        errores.add("Error en la línea: " + line + ". La edad debe ser numérica.");
+                        errores.add("Error en la línea: " + line + ". La edad tiene que ser numérica.");
                         continue;
                     }
 
@@ -355,14 +416,14 @@ public class tablaController {
                 } else {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setHeaderText(null);
-                    alert.setTitle("Éxito");
+                    alert.setTitle("Importado Correctamente");
                     alert.setContentText("Datos importados correctamente.");
                     alert.showAndWait();
                 }
 
             } catch (IOException e) {
                 ArrayList<String> errores = new ArrayList<>();
-                errores.add("No se pudo importar el archivo.");
+                errores.add("Error al importar.");
                 mostrarAlertError(errores);
             }
         }
