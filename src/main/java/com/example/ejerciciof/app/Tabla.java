@@ -23,6 +23,8 @@ public class Tabla extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(Tabla.class.getResource("/com/example/ejerciciof/hello-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         stage.setResizable(false);
+        stage.setWidth(650);
+        stage.setHeight(500);
         try {
             Image img = new Image(getClass().getResource("/com/example/ejerciciof/agenda.png").toString());
             stage.getIcons().add(img);
